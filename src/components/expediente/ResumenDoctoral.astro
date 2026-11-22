@@ -1,0 +1,108 @@
+---
+/** Hoja principal: las fechas que más maneja la UGD, en un solo lugar. */
+import { BadgeAlert, CheckCircle2 } from 'lucide-react';
+import type { DoctorandoProfile, ExpedienteDoctoralReal } from '../../types/student';
+import type { Trayectoria } from '../../lib/trayectoria';
+import { formatDuracion, formatFecha, NO_REGISTRADO } from '../../lib/fechas';
+import Card from '../panel/Card.astro';
+import SectionHeading from '../panel/SectionHeading.astro';
+import DataField from '../panel/DataField.astro';
+import TrayectoriaTimeline from './TrayectoriaTimeline.astro';
+import DevengamientoCard from './DevengamientoCard.astro';
+import ConvenioCard from './ConvenioCard.astro';
+
+interface Props {
+  doctorando: DoctorandoProfile;
+  expediente: ExpedienteDoctoralReal | null;
+  trayectoria: Trayectoria;
+}
+const { doctorando, expediente, trayectoria } = Astro.props;
+const { devengamiento, graduacion, contratoVigenteHasta, hitos } = trayectoria;
+
+const totalAdendas = expediente?.adendas?.length || 0;
+const restante = devengamiento?.cumplido ? 'Cumplido' : devengamiento?.restante ? formatDuracion(devengamiento.restante) : NO_REGISTRADO;
+
+const indicadores = [
+  {
+    label: 'Contrato y adendas hasta',
+    value: formatFecha(contratoVigenteHasta),
+    hint: totalAdendas ? `Contrato original y ${totalAdendas} adenda${totalAdendas === 1 ? '' : 's'}` : 'Contrato original',
+  },
+  { label: 'Fecha de graduación', value: graduacion ? formatFecha(graduacion) : NO_REGISTRADO, hint: graduacion ? 'Inicio del devengamiento' : null },
+  { label: 'Fin del devengamiento', value: formatFecha(devengamiento?.fin), hint: devengamiento?.fin ? 'Fecha fijada por la UGD' : null },
+  {
+    label: 'Tiempo por devengar',
+    value: restante,
+    hint: devengamiento?.progreso != null ? `${devengamiento.progreso} % del periodo cumplido` : null,
+    destacado: true,
+  },
+];
+---
+<div class="space-y-6">
+  <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-px overflow-hidden rounded-xl border border-border bg-border-subtle">
+    {
+      indicadores.map((ind) => (
+        <div class="bg-surface px-6 py-5">
+          <p class="text-[11px] font-medium uppercase tracking-wide text-muted">{ind.label}</p>
+          <p
+            class:list={[
+              'mt-2 leading-snug tabular-nums',
+              ind.value === NO_REGISTRADO ? 'text-base text-muted' : ['font-serif', ind.destacado ? 'text-2xl text-primary' : 'text-xl text-text-main'],
+            ]}
+          >
+            {ind.value}
+          </p>
+          {ind.hint && <p class="mt-1 text-xs text-muted">{ind.hint}</p>}
+        </div>
+      ))
+    }
+  </section>
+
+  <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+    <Card class="xl:col-span-3">
+      <SectionHeading title="Trayectoria del contrato" subtitle="Contrato, adendas, graduación y devengamiento registrados por la UGD." />
+      <TrayectoriaTimeline hitos={hitos} />
+    </Card>
+    <div class="xl:col-span-2 space-y-6">
+      <DevengamientoCard resumen={devengamiento} devengamiento={expediente?.devengamiento ?? null} />
+      <ConvenioCard expediente={expediente} />
+    </div>
+  </div>
+
+  <Card>
+    <SectionHeading title="Proyecto de investigación" />
+    <p class="font-serif text-lg text-text-main leading-relaxed">
+      {expediente?.tituloInvestigacion || <span class="font-sans text-sm text-muted">{NO_REGISTRADO}</span>}
+    </p>
+    <div class="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <DataField label="Facultad" value={doctorando.facultad} />
+      <DataField label="Carrera" value={doctorando.carrera} />
+      <DataField label="Oficio de registro" value={expediente?.oficioRegistroProyecto} />
+      <DataField label="Fecha de registro" value={expediente?.fechaOficioRegistro ? formatFecha(expediente.fechaOficioRegistro) : null} />
+    </div>
+    <p class="mt-5 pt-4 border-t border-border-subtle flex items-center gap-2 text-sm">
+      {
+        expediente?.tieneAlertaLegal ? (
+          <>
+            <BadgeAlert className="w-4 h-4 text-status-danger" />
+            <span class="text-status-danger">Tiene un proceso o alerta legal activa</span>
+          </>
+        ) : (
+          <>
+            <CheckCircle2 className="w-4 h-4 text-status-success" />
+            <span class="text-text-body">Expediente sin alertas legales</span>
+          </>
+        )
+      }
+    </p>
+  </Card>
+
+  {
+    expediente?.observaciones && (
+      <Card>
+        <SectionHeading title="Observaciones de la UGD" />
+        <p class="text-sm text-text-body leading-relaxed whitespace-pre-line">{expediente.observaciones}</p>
+      </Card>
+    )
+  }
+</div>

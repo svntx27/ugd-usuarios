@@ -1,0 +1,8 @@
+---
+/** Contenedor base de las secciones del panel. */
+interface Props { class?: string }
+const { class: className = '' } = Astro.props;
+---
+<section class:list={['rounded-xl border border-border bg-surface p-6', className]}>
+  <slot />
+</section>

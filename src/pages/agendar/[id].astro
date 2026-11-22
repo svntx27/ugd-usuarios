@@ -1,0 +1,28 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { BookingPage } from '../../components/BookingPage';
+import { fetchServerBookingData } from '../../lib/server-api';
+
+const { id } = Astro.params;
+const targetId = id || "1";
+const token = Astro.locals.token || Astro.cookies.get('auth_token')?.value;
+
+let bookingData = {
+  representative: null,
+  settings: {},
+};
+
+if (token) {
+  bookingData = await fetchServerBookingData(token, targetId);
+}
+---
+
+<Layout title="Agendar Cita Presencial - UGD">
+  <BookingPage
+    labId={targetId}
+    initialRepresentative={bookingData.representative}
+    initialSettings={bookingData.settings}
+    initialToken={token || null}
+    client:load
+  />
+</Layout>

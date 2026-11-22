@@ -1,0 +1,16 @@
+---
+/** Estado con un punto de color y texto. */
+import type { EstadoHito } from '../../lib/trayectoria';
+interface Props { estado: EstadoHito; label: string }
+const { estado, label } = Astro.props;
+const PUNTOS: Record<EstadoHito, string> = {
+  completado: 'bg-status-success',
+  en_curso: 'bg-gold',
+  pendiente: 'bg-status-info',
+  sin_fecha: 'bg-muted-foreground',
+};
+---
+<span class="inline-flex items-center gap-1.5 text-xs text-text-body whitespace-nowrap">
+  <span class:list={['h-1.5 w-1.5 rounded-full', PUNTOS[estado]]} aria-hidden="true"></span>
+  {label}
+</span>

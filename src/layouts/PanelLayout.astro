@@ -1,0 +1,111 @@
+---
+/**
+ * Layout del panel del doctorando: aviso institucional, menú lateral y área de contenido.
+ * Todo se renderiza en el servidor; el menú son enlaces normales (sin JavaScript).
+ */
+import { AlertCircle } from 'lucide-react';
+import Layout from './Layout.astro';
+import { MENU_PANEL, etiquetaSeccion, type SeccionPanel } from '../lib/panel-nav';
+import { fetchCitas, fetchPerfil, fetchRepresentantes, fetchSettings, type SettingsMap } from '../lib/server-api';
+
+interface Props {
+  title: string;
+  seccion: SeccionPanel;
+  settings?: SettingsMap;
+}
+const { title, seccion } = Astro.props;
+const token = Astro.locals.token;
+
+// Precalienta en segundo plano los datos de las demás secciones: la primera visita a cada una
+// ya los encuentra en memoria. No se espera la respuesta, así esta página no se demora.
+if (token) {
+  [fetchPerfil(token), fetchRepresentantes(token), fetchCitas(token)].forEach((p) => p.catch(() => {}));
+}
+
+const settings = Astro.props.settings ?? (token ? await fetchSettings(token) : {});
+
+const bannerActivo = settings?.banner_active === 'true' || settings?.communication_banners?.is_active;
+const bannerMensaje = settings?.global_message || settings?.communication_banners?.global_message;
+---
+<Layout title={`${title} | Portal Doctoral UGD`}>
+  <div class="max-w-7xl mx-auto space-y-6">
+    {
+      bannerActivo && bannerMensaje && (
+        <div role="status" class="flex items-start gap-4 rounded-xl border border-status-info-border bg-status-info-bg p-5">
+          <AlertCircle className="w-5 h-5 text-status-info shrink-0 mt-0.5" />
+          <div>
+            <h3 class="text-sm font-semibold text-status-info-text">Aviso institucional UGD</h3>
+            <p class="mt-1 text-sm leading-relaxed text-status-info-text whitespace-pre-line">{bannerMensaje}</p>
+          </div>
+        </div>
+      )
+    }
+
+    <!-- Menú en celular: desplegable nativo, sin JavaScript -->
+    <details class="lg:hidden group rounded-lg border border-border bg-surface">
+      <summary class="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm">
+        <span><span class="text-muted">Sección:</span> <span class="font-medium text-primary">{etiquetaSeccion(seccion)}</span></span>
+        <span aria-hidden="true" class="text-muted transition-transform group-open:rotate-180">▾</span>
+      </summary>
+      <nav aria-label="Secciones del panel" class="border-t border-border-subtle py-2">
+        {
+          MENU_PANEL.map((g) => (
+            <div class="py-1">
+              <p class="px-4 pt-2 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted">{g.grupo}</p>
+              {g.items.map((item) => (
+                <a
+                  href={item.href}
+                  data-astro-prefetch="load"
+                  aria-current={item.id === seccion ? 'page' : undefined}
+                  class:list={[
+                    'block px-4 py-2 text-sm border-l-2',
+                    item.id === seccion ? 'border-gold bg-gold-light/60 font-medium text-primary' : 'border-transparent text-text-body hover:text-primary',
+                  ]}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          ))
+        }
+      </nav>
+    </details>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <aside class="hidden lg:block lg:col-span-3 sticky top-28 pr-6 border-r border-border-subtle">
+        <nav aria-label="Secciones del panel" class="space-y-7">
+          {
+            MENU_PANEL.map((g) => (
+              <div>
+                <p class="pb-3 mb-2 border-b border-border-subtle text-[11px] font-semibold uppercase tracking-widest text-muted">{g.grupo}</p>
+                <ul class="space-y-0.5">
+                  {g.items.map((item) => (
+                    <li>
+                      <a
+                        href={item.href}
+                        data-astro-prefetch="load"
+                        aria-current={item.id === seccion ? 'page' : undefined}
+                        class:list={[
+                          'block py-2 px-3 text-sm border-l-2 transition-colors',
+                          item.id === seccion
+                            ? 'border-gold bg-gold-light/60 font-medium text-primary'
+                            : 'border-transparent text-text-body hover:text-primary hover:bg-surface-subtle',
+                        ]}
+                      >
+                        {item.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </nav>
+      </aside>
+
+      <div class="lg:col-span-9 min-w-0">
+        <slot />
+      </div>
+    </div>
+  </div>
+</Layout>

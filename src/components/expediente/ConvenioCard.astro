@@ -1,0 +1,32 @@
+---
+/** Convenio interinstitucional y financiamiento del programa. */
+import type { ExpedienteDoctoralReal } from '../../types/student';
+import { formatFecha } from '../../lib/fechas';
+import Card from '../panel/Card.astro';
+import SectionHeading from '../panel/SectionHeading.astro';
+import DataField from '../panel/DataField.astro';
+
+interface Props {
+  expediente: ExpedienteDoctoralReal | null;
+}
+const { expediente } = Astro.props;
+const convenio = expediente?.convenioObj;
+const institucion = expediente?.institucionDestino;
+const vigencia =
+  convenio?.fechaInicio || convenio?.fechaFin ? `${formatFecha(convenio?.fechaInicio)} – ${formatFecha(convenio?.fechaFin)}` : null;
+---
+<Card>
+  <SectionHeading title="Convenio y financiamiento" />
+  <div class="space-y-5">
+    <DataField label="Convenio" value={expediente?.convenio} />
+    <div class="grid grid-cols-2 gap-x-6 gap-y-5">
+      <DataField
+        label="Institución de destino"
+        value={institucion ? [institucion.nombre, institucion.pais].filter(Boolean).join(', ') : null}
+      />
+      <DataField label="Financiamiento" value={expediente?.tipoFinanciamiento} />
+      <DataField label="Vigencia del convenio" value={vigencia} />
+      <DataField label="Apoyo de proyecto I+D+i" value={expediente ? (expediente.tieneApoyoProyecto ? 'Sí' : 'No') : null} />
+    </div>
+  </div>
+</Card>

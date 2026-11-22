@@ -1,0 +1,41 @@
+---
+/** Programa doctoral y títulos previos. */
+import type { DoctorandoProfile, ExpedienteDoctoralReal } from '../../types/student';
+import { getEstadoBadge } from '../../lib/expediente-labels';
+import { NO_REGISTRADO } from '../../lib/fechas';
+import Card from '../panel/Card.astro';
+import SectionHeading from '../panel/SectionHeading.astro';
+import DataField from '../panel/DataField.astro';
+
+interface Props {
+  doctorando: DoctorandoProfile;
+  expediente: ExpedienteDoctoralReal | null;
+}
+const { doctorando, expediente } = Astro.props;
+const estado = getEstadoBadge(expediente?.estado);
+const institucion = expediente?.institucionDestino;
+---
+<div class="space-y-6">
+  <Card>
+    <SectionHeading title="Programa doctoral">
+      <span slot="aside" class="text-xs font-medium text-text-body">{estado.label}</span>
+    </SectionHeading>
+    <p class="font-serif text-2xl text-text-main">{expediente?.programa || NO_REGISTRADO}</p>
+    <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <DataField
+        label="Institución de destino"
+        value={institucion ? [institucion.nombre, institucion.pais].filter(Boolean).join(', ') : null}
+      />
+      <DataField label="Título a obtener" value={expediente?.programaDoctoral?.tituloAObtener} />
+      <DataField label="Facultad UCE" value={doctorando.facultad} />
+    </div>
+  </Card>
+
+  <Card>
+    <SectionHeading title="Títulos registrados" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <DataField label="Tercer nivel" value={doctorando.tituloTercerNivel} serif />
+      <DataField label="Cuarto nivel" value={doctorando.tituloCuartoNivel} serif />
+    </div>
+  </Card>
+</div>

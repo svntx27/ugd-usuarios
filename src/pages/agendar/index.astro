@@ -1,0 +1,39 @@
+---
+import PanelLayout from '../../layouts/PanelLayout.astro';
+import SectionHeading from '../../components/panel/SectionHeading.astro';
+import RepresentanteItem from '../../components/citas/RepresentanteItem.astro';
+import { fetchRepresentantes, fetchSettings } from '../../lib/server-api';
+
+const token = Astro.locals.token;
+const [representantes, settings] = token ? await Promise.all([fetchRepresentantes(token), fetchSettings(token)]) : [[], {}];
+const bloqueoGeneral = settings?.system_status === 'offline';
+const horario = `${settings?.start_hour || '08:00'} – ${settings?.end_hour || '16:00'}`;
+---
+<PanelLayout title="Agendar cita presencial" seccion="agendar" settings={settings}>
+  <section>
+    <SectionHeading
+      title="Agendar cita presencial"
+      subtitle={`Elige al representante de la UGD con quien quieres reunirte. Horario de atención: ${horario}.`}
+    />
+    {
+      bloqueoGeneral && (
+        <p role="status" class="mb-5 rounded-xl border border-status-warning-border bg-status-warning-bg p-4 text-sm text-status-warning-text">
+          El agendamiento de citas está suspendido temporalmente por la UGD.
+        </p>
+      )
+    }
+    {
+      representantes.length === 0 ? (
+        <p class="rounded-xl border border-dashed border-border bg-surface p-8 text-center text-sm text-muted">
+          No hay representantes disponibles para agendar en este momento.
+        </p>
+      ) : (
+        <div class="space-y-4">
+          {representantes.map((rep) => (
+            <RepresentanteItem representante={rep} bloqueoGeneral={bloqueoGeneral} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+</PanelLayout>

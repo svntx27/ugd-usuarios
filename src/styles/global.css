@@ -1,0 +1,93 @@
+@import "tailwindcss";
+@import "sileo/styles.css";
+
+@theme {
+  /* ==========================================================================
+     SISTEMA DE DISEÑO INSTITUCIONAL UCE - UGD (DEEP NAVY & ANTIQUE GOLD)
+     Misma paleta que next-frontend-admin/src/app/globals.css
+     ========================================================================== */
+
+  /* Tipografías */
+  --font-serif: "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Identidad Principal: DEEP NAVY */
+  --color-primary: #172D4D;
+  --color-primary-hover: #102138;
+  --color-primary-foreground: #FFFFFF;
+
+  /* Identidad Secundaria: ORO INSTITUCIONAL UCE */
+  --color-gold: #B58A45;
+  --color-gold-hover: #9E7432;
+  --color-gold-foreground: #FFFFFF;
+  --color-gold-light: #FBF5EA;
+  --color-gold-border: #E8CF9F;
+  --color-gold-text: #875C1C;
+
+  /* Superficies y Fondos Limpios (Libre de tono arena) */
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F5F7FA;
+  --color-surface-muted: #EFF3F7;
+
+  /* Colores Secundarios y de Apoyo */
+  --color-secondary: #F0F3F7;
+  --color-secondary-hover: #E7ECF2;
+  --color-secondary-foreground: #172D4D;
+
+  /* Textos y Modos Muted (Contraste > 12:1) */
+  --color-text-main: #101E33;
+  --color-text-body: #1E3352;
+  --color-muted: #52667D;
+  --color-muted-foreground: #8799AF;
+  --color-muted-bg: #F0F3F7;
+
+  /* Bordes y Anillo de Foco */
+  --color-border: #DFE5EB;
+  --color-border-subtle: #EDF1F5;
+  --color-border-focus: #B58A45;
+
+  /* Estados: Éxito (Green Apagado / Sobrio) */
+  --color-status-success: #276848;
+  --color-status-success-bg: #EBF5EF;
+  --color-status-success-text: #1E5339;
+  --color-status-success-border: #C1E1CE;
+
+  /* Estados: Alerta / Pendiente / Pre-registro (Amber Cálido) */
+  --color-status-warning: #996211;
+  --color-status-warning-bg: #FCF4E8;
+  --color-status-warning-text: #7D4E08;
+  --color-status-warning-border: #EED4AF;
+
+  /* Estados: Peligro / Cancelación / Inhabilitado (Rojo Borgoña Apagado) */
+  --color-status-danger: #A33B3B;
+  --color-status-danger-bg: #FCEEEE;
+  --color-status-danger-hover: #F7D7D7;
+  --color-status-danger-border: #F0C4C4;
+
+  /* Estados: Información / Trámites (Azul Desaturado) */
+  --color-status-info: #31587D;
+  --color-status-info-bg: #ECF3F9;
+  --color-status-info-text: #24425E;
+  --color-status-info-border: #C4D9EC;
+}
+
+:root {
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: var(--color-text-main);
+  background-color: var(--color-surface-subtle);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--color-surface-subtle);
+}

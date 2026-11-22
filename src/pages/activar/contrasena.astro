@@ -1,0 +1,17 @@
+---
+import AuthLayout from '../../layouts/AuthLayout.astro';
+import { SaludoDoctorando } from '../../components/auth/SaludoDoctorando';
+import { CrearContrasenaForm } from '../../components/auth/CrearContrasenaForm';
+---
+<AuthLayout title="Crear contraseña">
+  <!-- Los datos del doctorando viven en el navegador (paso 1), por eso estas islas no se renderizan en el servidor -->
+  <SaludoDoctorando slot="lateral" client:only="react" />
+
+  <header class="mb-8">
+    <p class="text-xs font-medium uppercase tracking-wider text-muted">Paso 2 de 2</p>
+    <h2 class="mt-1 font-serif text-3xl font-bold tracking-tight text-text-main">Crea tu contraseña</h2>
+    <p class="mt-2 text-sm text-text-body">Define una clave segura para proteger tu cuenta y gestionar tus citas.</p>
+  </header>
+
+  <CrearContrasenaForm client:only="react" />
+</AuthLayout>

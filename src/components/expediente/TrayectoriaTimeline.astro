@@ -1,0 +1,61 @@
+---
+/** Línea de tiempo vertical: contrato, adendas, graduación y devengamiento en orden. */
+import type { EstadoHito, Hito } from '../../lib/trayectoria';
+import { diferenciaYMD, formatDuracion, formatFecha } from '../../lib/fechas';
+import StatusText from '../panel/StatusText.astro';
+
+interface Props {
+  hitos: Hito[];
+}
+const { hitos } = Astro.props;
+
+const ESTADOS: Record<EstadoHito, { label: string; punto: string }> = {
+  completado: { label: 'Cumplido', punto: 'bg-primary border-primary' },
+  en_curso: { label: 'Vigente', punto: 'bg-gold border-gold' },
+  pendiente: { label: 'Próximo', punto: 'bg-surface border-primary' },
+  sin_fecha: { label: 'Sin fechas', punto: 'bg-surface border-muted-foreground' },
+};
+
+const filas = hitos.map((hito, i) => {
+  const rango =
+    hito.tipo === 'graduacion'
+      ? formatFecha(hito.inicio)
+      : hito.inicio
+        ? `${formatFecha(hito.inicio)} – ${formatFecha(hito.fin)}`
+        : `Hasta el ${formatFecha(hito.fin)}`;
+  const conDuracion = hito.tipo === 'contrato' || hito.tipo === 'adenda';
+  const duracion = conDuracion && hito.inicio && hito.fin && hito.fin >= hito.inicio ? formatDuracion(diferenciaYMD(hito.inicio, hito.fin)) : null;
+  return {
+    hito,
+    rango,
+    nota: [hito.detalle, duracion].filter(Boolean).join(' · '),
+    ultimo: i === hitos.length - 1,
+    destacado: hito.tipo === 'graduacion' || hito.tipo === 'devengamiento',
+    estado: ESTADOS[hito.estado],
+  };
+});
+---
+{
+  hitos.length === 0 ? (
+    <p class="text-sm text-muted">La UGD aún no registra fechas de contrato, adendas ni devengamiento.</p>
+  ) : (
+    <ol>
+      {filas.map(({ hito, rango, nota, ultimo, destacado, estado }) => (
+        <li class="relative grid grid-cols-[1.25rem_1fr] gap-x-4">
+          <div class="relative flex justify-center">
+            {!ultimo && <span aria-hidden="true" class="absolute top-3 bottom-0 w-px bg-border" />}
+            <span aria-hidden="true" class:list={['relative mt-1.5 h-2.5 w-2.5 rounded-full border-2', estado.punto]} />
+          </div>
+          <div class:list={[!ultimo && 'pb-6']}>
+            <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <p class:list={['text-sm', destacado ? 'font-semibold text-primary' : 'font-medium text-text-main']}>{hito.titulo}</p>
+              <StatusText estado={hito.estado} label={estado.label} />
+            </div>
+            <p class="mt-0.5 text-sm text-text-body tabular-nums">{rango}</p>
+            {nota && <p class="mt-0.5 text-xs text-muted">{nota}</p>}
+          </div>
+        </li>
+      ))}
+    </ol>
+  )
+}

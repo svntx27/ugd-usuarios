@@ -1,0 +1,12 @@
+---
+import { NO_REGISTRADO } from '../../lib/fechas';
+interface Props { label: string; value?: string | number | null; serif?: boolean; class?: string }
+const { label, value, serif = false, class: className = '' } = Astro.props;
+const vacio = value === null || value === undefined || value === '';
+---
+<div class:list={['space-y-1', className]}>
+  <span class="block text-[11px] font-medium uppercase tracking-wide text-muted">{label}</span>
+  <p class:list={['text-sm text-text-main tabular-nums', serif ? 'font-serif text-base leading-snug' : 'font-medium']}>
+    {vacio ? <span class="font-normal text-muted">{NO_REGISTRADO}</span> : value}
+  </p>
+</div>

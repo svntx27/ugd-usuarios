@@ -1,0 +1,13 @@
+---
+import PanelLayout from '../../layouts/PanelLayout.astro';
+import ExpedienteMarco from '../../components/expediente/ExpedienteMarco.astro';
+import DatosPersonales from '../../components/expediente/DatosPersonales.astro';
+import { cargarExpediente } from '../../lib/expediente-ssr';
+
+const { doctorando, expediente } = await cargarExpediente(Astro.locals.token);
+---
+<PanelLayout title="Datos personales" seccion="datos">
+  <ExpedienteMarco doctorando={doctorando} expediente={expediente}>
+    {doctorando && <DatosPersonales doctorando={doctorando} />}
+  </ExpedienteMarco>
+</PanelLayout>

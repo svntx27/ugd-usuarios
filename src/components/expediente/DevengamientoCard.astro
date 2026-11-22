@@ -1,0 +1,65 @@
+---
+/** Periodo de devengamiento: fechas oficiales, avance y registros. */
+import type { ExpedienteDoctoralReal } from '../../types/student';
+import type { ResumenDevengamiento } from '../../lib/trayectoria';
+import { formatDuracion, formatFecha } from '../../lib/fechas';
+import { DEVENGAMIENTO_LABELS } from '../../lib/expediente-labels';
+import Card from '../panel/Card.astro';
+import SectionHeading from '../panel/SectionHeading.astro';
+import DataField from '../panel/DataField.astro';
+
+interface Props {
+  resumen: ResumenDevengamiento | null;
+  devengamiento: ExpedienteDoctoralReal['devengamiento'];
+}
+const { resumen, devengamiento } = Astro.props;
+
+const estadoLabel = devengamiento?.estado ? DEVENGAMIENTO_LABELS[devengamiento.estado] || devengamiento.estado : null;
+const totalCalculado = resumen?.total ? formatDuracion(resumen.total) : null;
+// El texto de la UGD solo se muestra aparte si dice algo distinto al cálculo
+const normalizar = (t: string) => t.toLowerCase().replace(/[^a-z0-9ñ]/g, '');
+const mostrarOficial =
+  !!resumen?.tiempoOficial && !!totalCalculado && normalizar(resumen.tiempoOficial) !== normalizar(totalCalculado);
+---
+<Card>
+  <SectionHeading title="Devengamiento">
+    {estadoLabel && <span slot="aside" class="text-xs font-medium text-gold-text">{estadoLabel}</span>}
+  </SectionHeading>
+
+  {
+    !resumen || !devengamiento ? (
+      <p class="text-sm text-muted">
+        La UGD aún no registra un periodo de devengamiento. Se formaliza una vez culminada la defensa de tesis.
+      </p>
+    ) : (
+      <>
+        {resumen.progreso !== null && (
+          <div class="mb-6">
+            <div class="flex items-baseline justify-between text-sm">
+              <span class="text-text-body">Avance del periodo</span>
+              <span class="font-semibold text-primary tabular-nums">{resumen.progreso} %</span>
+            </div>
+            <div
+              class="mt-2 h-2 w-full rounded-full bg-surface-muted overflow-hidden"
+              role="progressbar"
+              aria-label="Avance del periodo de devengamiento"
+              aria-valuenow={resumen.progreso}
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <div class="h-full rounded-full bg-primary" style={`width: ${resumen.progreso}%`} />
+            </div>
+          </div>
+        )}
+        <div class="grid grid-cols-2 gap-x-6 gap-y-5">
+          <DataField label="Inicio" value={resumen.inicio ? formatFecha(resumen.inicio) : null} />
+          <DataField label="Fin" value={resumen.fin ? formatFecha(resumen.fin) : null} />
+          <DataField label="Tiempo total" value={totalCalculado || resumen.tiempoOficial} />
+          {mostrarOficial && <DataField label="Registrado por la UGD" value={resumen.tiempoOficial} />}
+          <DataField label="Registro SENESCYT" value={devengamiento.registroSenescyt} />
+          <DataField label="Oficio de notificación" value={devengamiento.oficioNotificacion} class="col-span-2" />
+        </div>
+      </>
+    )
+  }
+</Card>

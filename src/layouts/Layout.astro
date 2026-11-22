@@ -1,0 +1,64 @@
+---
+import '../styles/global.css';
+import { Navbar } from '../components/Navbar';
+import { ToastProvider } from '../components/ToastProvider';
+import { ClientRouter } from 'astro:transitions';
+import { AUTH_USER_KEY, AUTH_EXPIRY_KEY } from '../lib/cookies';
+import type { User } from '../types';
+
+interface Props {
+  title?: string;
+  showNavbar?: boolean;
+}
+
+const { title = "Portal del Estudiante Doctoral - Unidad de Gestión de Doctorados (UGD)", showNavbar = true } = Astro.props;
+
+let initialUser: User | null = null;
+try {
+  const userCookie = Astro.cookies.get(AUTH_USER_KEY)?.value;
+  const expiryCookie = Astro.cookies.get(AUTH_EXPIRY_KEY)?.value;
+  const isExpired = expiryCookie && Date.now() >= Number(expiryCookie);
+  if (userCookie && !isExpired) {
+    initialUser = JSON.parse(decodeURIComponent(userCookie));
+  }
+} catch {
+  // Ignorar errores de parsing
+}
+---
+
+<!DOCTYPE html>
+<html lang="es" transition:animate="none">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content="Portal del Estudiante Doctoral de la Unidad de Gestión de Doctorados (UGD) de la Universidad Central del Ecuador." />
+    <title>{title}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+    
+    <ClientRouter />
+  </head>
+  <body class="min-h-screen bg-surface flex flex-col font-sans text-text-main selection:bg-primary selection:text-primary-foreground">
+    <ToastProvider client:idle />
+    
+    {showNavbar && <Navbar initialUser={initialUser} client:load />}
+    
+    <main class={showNavbar ? "flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8" : "flex-grow flex flex-col"}>
+      <slot />
+    </main>
+
+    {showNavbar && (
+      <footer class="py-8 border-t border-border-subtle mt-auto bg-surface-subtle/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center text-xs text-muted gap-2 text-center sm:text-left">
+          <p>&copy; {new Date().getFullYear()} Universidad Central del Ecuador &bull; Unidad de Gestión de Doctorados (UGD)</p>
+          <p class="font-light">Facultad de Ingeniería y Ciencias Aplicadas</p>
+        </div>
+      </footer>
+    )}
+  </body>
+</html>

@@ -1,0 +1,23 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro';
+import { VerificacionForm } from '../components/auth/VerificacionForm';
+---
+<AuthLayout
+  title="Activar cuenta"
+  heading="Tu potencial es infinito."
+  subheading="Portal oficial de gestión doctoral de la Universidad Central del Ecuador. Activa tu cuenta en dos pasos."
+  imageSrc="https://images.unsplash.com/photo-1507413245164-6160d8298b31?q=80&w=2070&auto=format&fit=crop"
+>
+  <header class="mb-8 text-center">
+    <p class="text-xs font-medium uppercase tracking-wider text-muted">Paso 1 de 2</p>
+    <h2 class="mt-1 font-serif text-3xl font-bold tracking-tight text-text-main">Activa tu cuenta</h2>
+    <p class="mt-2 text-sm text-text-body">Comprobaremos que estés registrado en la nómina de la Unidad de Gestión de Doctorados.</p>
+  </header>
+
+  <VerificacionForm client:load />
+
+  <p class="mt-6 text-center text-sm text-text-body">
+    ¿Ya activaste tu cuenta?{' '}
+    <a href="/login" class="font-medium text-primary hover:underline">Inicia sesión aquí</a>
+  </p>
+</AuthLayout>

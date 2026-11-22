@@ -1,0 +1,56 @@
+---
+/**
+ * Layout de las páginas de acceso (login y activación): panel institucional a un lado y formulario al otro.
+ * Todo se renderiza en el servidor; solo los formularios son islas React.
+ *
+ * Slots:
+ *  - default: contenido del formulario (columna clara).
+ *  - lateral: reemplaza el texto del panel institucional (por ejemplo, el saludo del paso 2).
+ */
+import Layout from './Layout.astro';
+
+interface Props {
+  title: string;
+  heading?: string;
+  subheading?: string;
+  imageSrc?: string;
+  reverse?: boolean;
+}
+const { title, heading = '', subheading = '', imageSrc, reverse = false } = Astro.props;
+const tieneLateral = Astro.slots.has('lateral');
+---
+<Layout title={`${title} | Portal Doctoral UGD`} showNavbar={false}>
+  <div class:list={['flex min-h-screen w-full bg-surface', reverse && 'flex-row-reverse']}>
+    <aside class="hidden lg:flex lg:w-1/2 relative bg-primary items-center justify-center overflow-hidden">
+      {
+        imageSrc && !tieneLateral && (
+          <div class="absolute inset-0">
+            <img src={imageSrc} alt="" class="h-full w-full object-cover opacity-80" loading="eager" decoding="async" />
+            <div class="absolute inset-0 bg-primary/70" />
+          </div>
+        )
+      }
+      <div class="relative z-10 w-full max-w-lg p-12 text-white">
+        {
+          tieneLateral ? (
+            <slot name="lateral" />
+          ) : (
+            <>
+              <h1 class="font-serif text-5xl font-medium leading-tight tracking-tight">{heading}</h1>
+              <p class="mt-6 text-xl font-light leading-relaxed text-white/85">{subheading}</p>
+            </>
+          )
+        }
+      </div>
+    </aside>
+
+    <section class="flex flex-1 flex-col items-center justify-center p-8 lg:p-12">
+      <div class="w-full max-w-md">
+        <slot />
+        <p class="mt-8 border-t border-border-subtle pt-8 text-center text-xs text-muted">
+          Unidad de Gestión de Doctorados (UGD) • Universidad Central del Ecuador © {new Date().getFullYear()}
+        </p>
+      </div>
+    </section>
+  </div>
+</Layout>

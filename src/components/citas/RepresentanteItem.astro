@@ -1,0 +1,54 @@
+---
+/** Representante de la UGD con el que el doctorando puede agendar una cita. */
+import { MapPin } from 'lucide-react';
+import type { Representative } from '../../types';
+
+interface Props {
+  representante: Representative;
+  bloqueoGeneral: boolean;
+}
+const { representante: rep, bloqueoGeneral } = Astro.props;
+
+const estado = bloqueoGeneral ? 'inhabilitado' : rep.estado || 'disponible';
+const disponible = !bloqueoGeneral && (estado === 'disponible' || estado === 'activo');
+const motivo = bloqueoGeneral ? 'Atención suspendida' : estado === 'mantenimiento' ? 'No disponible' : estado === 'inhabilitado' ? 'Inhabilitado' : null;
+---
+<article
+  class:list={[
+    'flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border bg-surface p-5 transition-colors',
+    disponible ? 'border-border hover:border-primary' : 'border-border-subtle opacity-75',
+  ]}
+>
+  <div>
+    <h3 class="font-serif text-xl text-text-main">{rep.nombre}</h3>
+    {rep.title && <p class="mt-0.5 text-sm text-text-body">{rep.title}</p>}
+    {
+      rep.ubicacion && (
+        <p class="mt-1 flex items-center gap-1 text-xs text-muted">
+          <MapPin className="h-3.5 w-3.5" /> {rep.ubicacion}
+        </p>
+      )
+    }
+  </div>
+  <div class="flex items-center gap-5">
+    <span class="inline-flex items-center gap-1.5 text-xs text-text-body">
+      <span aria-hidden="true" class:list={['h-1.5 w-1.5 rounded-full', disponible ? 'bg-status-success' : 'bg-status-danger']}></span>
+      {disponible ? 'Agenda abierta' : motivo || 'No disponible'}
+    </span>
+    {
+      disponible ? (
+        <a
+          href={`/agendar/${rep.id}`}
+          data-astro-prefetch="viewport"
+          class="rounded-full bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2"
+        >
+          Agendar cita
+        </a>
+      ) : (
+        <span class="rounded-full bg-surface-muted px-6 py-2 text-sm text-muted" aria-disabled="true">
+          Agendar cita
+        </span>
+      )
+    }
+  </div>
+</article>

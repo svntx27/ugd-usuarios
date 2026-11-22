@@ -1,0 +1,16 @@
+---
+import PanelLayout from '../layouts/PanelLayout.astro';
+import SectionHeading from '../components/panel/SectionHeading.astro';
+import { MisCitas } from '../components/citas/MisCitas';
+import { fetchCitas, fetchSettings } from '../lib/server-api';
+
+const token = Astro.locals.token;
+const [citas, settings] = token ? await Promise.all([fetchCitas(token), fetchSettings(token)]) : [[], {}];
+---
+<PanelLayout title="Mis citas agendadas" seccion="citas" settings={settings}>
+  <section>
+    <SectionHeading title="Mis citas agendadas" subtitle="Citas presenciales solicitadas en la Unidad de Gestión de Doctorados." />
+    <!-- Única parte interactiva del panel: cancelar citas y refrescar la lista -->
+    <MisCitas client:load initialCitas={citas} duracionTurno={settings?.slot_interval || 30} />
+  </section>
+</PanelLayout>

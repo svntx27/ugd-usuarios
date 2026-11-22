@@ -1,0 +1,54 @@
+---
+/** Cabecera del expediente: identidad del doctorando y su estado oficial. */
+import type { DoctorandoProfile, ExpedienteDoctoralReal } from '../../types/student';
+import { getEstadoBadge } from '../../lib/expediente-labels';
+import { NO_REGISTRADO } from '../../lib/fechas';
+
+interface Props {
+  doctorando: DoctorandoProfile;
+  expediente: ExpedienteDoctoralReal | null;
+}
+const { doctorando, expediente } = Astro.props;
+
+const nombreCompleto = doctorando.nombreCompleto || `${doctorando.nombres} ${doctorando.apellidos}`.trim();
+const iniciales = `${doctorando.nombres?.charAt(0) || ''}${doctorando.apellidos?.charAt(0) || ''}`.toUpperCase() || 'UD';
+const estado = getEstadoBadge(expediente?.estado);
+const datos = [
+  { label: 'Cédula', value: doctorando.cedula },
+  { label: 'Carpeta', value: doctorando.carpeta || NO_REGISTRADO },
+  { label: 'Nómina', value: doctorando.numeroOrden ? `N.º ${doctorando.numeroOrden}` : NO_REGISTRADO },
+  { label: 'Teléfono', value: doctorando.telefono || NO_REGISTRADO },
+];
+---
+<header class="rounded-xl border border-border bg-surface p-6">
+  <div class="flex flex-col md:flex-row md:items-center gap-5">
+    <div class="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-serif text-xl shrink-0">
+      {iniciales}
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <h2 class="font-serif text-2xl md:text-3xl text-text-main leading-tight">{nombreCompleto}</h2>
+        <span class:list={['rounded border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide', estado.classes]}>
+          {estado.label}
+        </span>
+      </div>
+      <p class="mt-1 text-sm text-text-body">
+        {expediente?.programa ? `Doctorado en ${expediente.programa}` : NO_REGISTRADO}
+        {expediente?.institucionDestino && <span class="text-muted"> — {expediente.institucionDestino.nombre}</span>}
+      </p>
+    </div>
+  </div>
+
+  <dl class="mt-6 pt-5 border-t border-border-subtle grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-4">
+    {datos.map((d) => (
+      <div>
+        <dt class="text-[11px] uppercase tracking-wide text-muted">{d.label}</dt>
+        <dd class="mt-0.5 text-sm text-text-main tabular-nums">{d.value}</dd>
+      </div>
+    ))}
+    <div class="col-span-2">
+      <dt class="text-[11px] uppercase tracking-wide text-muted">Correo institucional</dt>
+      <dd class="mt-0.5 text-sm text-text-main truncate" title={doctorando.correoInstitucional}>{doctorando.correoInstitucional}</dd>
+    </div>
+  </dl>
+</header>

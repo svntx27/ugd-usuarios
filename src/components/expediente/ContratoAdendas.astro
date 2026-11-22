@@ -1,0 +1,84 @@
+---
+/** Contrato de beca, adendas, convenio y devengamiento. */
+import type { ExpedienteDoctoralReal } from '../../types/student';
+import type { Trayectoria } from '../../lib/trayectoria';
+import { diferenciaYMD, formatDuracion, formatFecha, parseFecha } from '../../lib/fechas';
+import Card from '../panel/Card.astro';
+import SectionHeading from '../panel/SectionHeading.astro';
+import DataField from '../panel/DataField.astro';
+import StatusText from '../panel/StatusText.astro';
+import ConvenioCard from './ConvenioCard.astro';
+import DevengamientoCard from './DevengamientoCard.astro';
+
+interface Props {
+  expediente: ExpedienteDoctoralReal | null;
+  trayectoria: Trayectoria;
+}
+const { expediente, trayectoria } = Astro.props;
+
+const ESTADO_ADENDA = { completado: 'Cumplida', en_curso: 'Vigente', pendiente: 'Próxima', sin_fecha: 'Sin fechas' } as const;
+const inicio = parseFecha(expediente?.contratoInicio);
+const fin = parseFecha(expediente?.contratoFin);
+const adendas = trayectoria.hitos
+  .filter((h) => h.tipo === 'adenda')
+  .map((a) => ({
+    ...a,
+    numero: a.titulo.replace('Adenda ', ''),
+    duracion: a.inicio && a.fin && a.fin >= a.inicio ? formatDuracion(diferenciaYMD(a.inicio, a.fin)) : '—',
+  }));
+---
+<div class="space-y-6">
+  <Card>
+    <SectionHeading title="Contrato de beca" subtitle="Contrato original y adendas registradas por la UGD." />
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <DataField label="Inicio" value={inicio ? formatFecha(inicio) : null} />
+      <DataField label="Fin" value={fin ? formatFecha(fin) : null} />
+      <DataField label="Duración registrada" value={expediente?.contratoMeses ? `${expediente.contratoMeses} meses` : null} />
+      <DataField
+        label="Vigente con adendas hasta"
+        value={trayectoria.contratoVigenteHasta ? formatFecha(trayectoria.contratoVigenteHasta) : null}
+      />
+    </div>
+
+    <div class="mt-6 -mx-6 overflow-x-auto border-t border-border-subtle">
+      {
+        adendas.length === 0 ? (
+          <p class="px-6 pt-5 text-sm text-muted">No constan adendas registradas al contrato.</p>
+        ) : (
+          <table class="w-full text-left text-sm">
+            <caption class="sr-only">Adendas del contrato de beca</caption>
+            <thead>
+              <tr class="text-[11px] uppercase tracking-wide text-muted">
+                <th scope="col" class="px-6 py-3 font-medium">Adenda</th>
+                <th scope="col" class="px-4 py-3 font-medium">Tipo</th>
+                <th scope="col" class="px-4 py-3 font-medium">Desde</th>
+                <th scope="col" class="px-4 py-3 font-medium">Hasta</th>
+                <th scope="col" class="px-4 py-3 font-medium">Duración</th>
+                <th scope="col" class="px-6 py-3 font-medium">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border-subtle border-t border-border-subtle tabular-nums">
+              {adendas.map((a) => (
+                <tr>
+                  <td class="px-6 py-3 font-medium text-text-main whitespace-nowrap">{a.numero}</td>
+                  <td class="px-4 py-3 text-text-body">{a.detalle || '—'}</td>
+                  <td class="px-4 py-3 text-text-body whitespace-nowrap">{a.inicio ? formatFecha(a.inicio) : '—'}</td>
+                  <td class="px-4 py-3 text-text-body whitespace-nowrap">{formatFecha(a.fin)}</td>
+                  <td class="px-4 py-3 text-muted whitespace-nowrap">{a.duracion}</td>
+                  <td class="px-6 py-3">
+                    <StatusText estado={a.estado} label={ESTADO_ADENDA[a.estado]} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+      }
+    </div>
+  </Card>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <ConvenioCard expediente={expediente} />
+    <DevengamientoCard resumen={trayectoria.devengamiento} devengamiento={expediente?.devengamiento ?? null} />
+  </div>
+</div>
